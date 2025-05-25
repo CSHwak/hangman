@@ -1,1 +1,234 @@
-<!DOCTYPE html><html><head><title>Hangman</title></head><body><h1>Hangman Game</h1></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hangman Hover Stats</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Margarine&display=swap" rel="stylesheet" />
+  <style>
+    @keyframes fall {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(150px); opacity: 1; }
+    }
+    @keyframes dash {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      margin: 0;
+      background: #fefefe;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .hangman {
+      position: relative;
+      width: 120px;
+      height: 200px;
+      margin-bottom: 2rem;
+      margin-top: 4rem;
+    }
+    .structure,
+    .part {
+      position: absolute;
+      background-color: #000;
+      display: none;
+    }
+    .base { bottom: 0; left: 0; width: 100%; height: 6px; }
+    .post { top: 0; left: 20px; width: 6px; height: 200px; }
+    .beam { top: 0; left: 20px; width: 70px; height: 6px; }
+    .rope { top: 6px; left: 88px; width: 2px; height: 20px; background-color: #a37a3d; transition: height 0.6s ease; }
+    .rope.cut { height: 0 !important; }
+    .head { top: 26px; left: 75px; width: 26px; height: 26px; border-radius: 50%; }
+    .body { top: 52px; left: 87px; width: 2px; height: 50px; }
+    .arm-left { top: 60px; left: 87px; width: 20px; height: 2px; transform: rotate(-45deg); transform-origin: left center; }
+    .arm-right { top: 60px; left: 68px; width: 20px; height: 2px; transform: rotate(45deg); transform-origin: right center; }
+    .leg-left { top: 95px; left: 87px; width: 20px; height: 2px; transform: rotate(45deg); transform-origin: top left; }
+    .leg-right { top: 95px; left: 68px; width: 20px; height: 2px; transform: rotate(-45deg); transform-origin: top right; }
+    .word {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      align-items: center;
+      margin-top: 10vh;
+    }
+    .letter {
+      width: 50px; height: 60px;
+      font-size: 3rem;
+      font-family: 'Margarine', cursive;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      border-bottom: 4px solid #000;
+      position: relative;
+      user-select: none;
+    }
+    .letter span { color: transparent; }
+    .letter.hinted span { color: #ccc !important; }
+    .letter.revealed span { color: #000 !important; }
+    .letter.revealed:hover span {
+      color: red;
+      cursor: pointer;
+    }
+    #description {
+      display: none;
+      position: absolute;
+      top: 60%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #f4f4f4;
+      border: 3px solid #000;
+      padding: 1rem;
+      width: 300px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.7rem;
+      text-align: center;
+      box-shadow: 4px 4px 0 #000;
+      line-height: 1.8;
+      z-index: 10;
+    }
+    #keyInput {
+      position: fixed;
+      bottom: 3.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1rem;
+      padding: 0.5rem;
+      font-family: 'Press Start 2P', monospace;
+      border: 2px solid #000;
+      width: 280px;
+      text-align: center;
+    }
+    #continueBtn {
+      display: none;
+      position: fixed;
+      bottom: 6.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.7rem;
+      border: 2px solid #000;
+      background: #fff;
+      cursor: pointer;
+      padding: 0.4rem 1rem;
+      z-index: 20;
+    }
+  </style>
+</head>
+<body>
+  <div class="hangman">
+    <div class="structure base" style="display: none;"></div>
+    <div class="structure post"></div>
+    <div class="structure beam"></div>
+    <div class="structure rope" id="rope"></div>
+    <div class="part head"></div>
+    <div class="part body"></div>
+    <div class="part arm-left"></div>
+    <div class="part arm-right"></div>
+    <div class="part leg-left"></div>
+    <div class="part leg-right"></div>
+  </div>
+  <p style="font-family: 'Press Start 2P', monospace; font-size: 0.8rem; text-align: center; margin-bottom: -0.5rem;">Guess the country!</p>
+  <div class="word" id="word"></div>
+  <input type="text" id="keyInput" maxlength="1" placeholder="Type S..." />
+  <button id="continueBtn">Cut the rope</button>
+  <div id="description"></div>
+  <script>
+    const word = 'SOUTHKOREA';
+    const stats = {
+      'S': '<b><u>Suicide Rate</u></b><br>This country has the highest suicide rate in the OECD.',
+      'O': '<b><u>Overwork Hours</u></b><br>Overworking is endemic — people work ~1915 hours/year, among the highest in the OECD.',
+      'U': '<b><u>Unemployment</u></b><br>Youth unemployment is ~7.3% (KOSIS, 2023).',
+      'T': '<b><u>Test Pressure</u></b><br>Over 70% of students face academic stress (PISA).',
+      'H': '<b><u>Hardworking Culture</u></b><br>Long work hours are normalized.',
+      'K': '<b><u>Kids & Birthrate</u></b><br>Lowest birth rate globally: 0.8/woman.',
+      'R': '<b><u>Risk of Depression</u></b><br>Adolescent depression rates are high.',
+      'E': '<b><u>Elderly Poverty</u></b><br>~40% — the highest in the OECD.',
+      'A': '<b><u>Academic Pressure</u></b><br>Ranks among the highest globally (PISA).'
+    };
+
+    const bodyParts = ['base','post','beam','rope','head','body','arm-left','arm-right','leg-left','leg-right'];
+    const wordContainer = document.getElementById('word');
+    const descriptionBox = document.getElementById('description');
+    const input = document.getElementById('keyInput');
+    const continueBtn = document.getElementById('continueBtn');
+
+    let revealedCount = 0;
+
+    word.split('').forEach((char, i) => {
+      const el = document.createElement('div');
+      el.classList.add('letter');
+      if (i === 0) el.classList.add('hinted');
+      el.dataset.letter = char;
+      el.innerHTML = (i === 0 ? '<span>S</span>' : '<span></span>');
+      wordContainer.appendChild(el);
+    });
+
+    function updateHangman(count) {
+      document.querySelectorAll('.structure, .part').forEach(p => p.style.display = 'none');
+      for (let i = 0; i < count && i < bodyParts.length; i++) {
+        document.querySelector('.' + bodyParts[i]).style.display = 'block';
+      }
+    }
+
+    input.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      const val = input.value.trim().toUpperCase();
+      input.value = '';
+      if (input.placeholder === 'Type S...') input.placeholder = 'Guess the letter...';
+
+      if (val === word) {
+        document.querySelectorAll('.letter').forEach(l => {
+          if (!l.classList.contains('revealed')) {
+            l.classList.add('revealed');
+            l.querySelector('span').textContent = l.dataset.letter;
+          }
+        });
+        revealedCount = word.length;
+        updateHangman(revealedCount);
+        continueBtn.style.display = 'block';
+        input.style.display = 'none';
+        return;
+      }
+
+      const letters = document.querySelectorAll('.letter');
+      let matches = 0;
+
+      letters.forEach(el => {
+        if (!el.classList.contains('revealed') && el.dataset.letter === val) {
+          el.classList.remove('hinted');
+          el.classList.add('revealed');
+          el.querySelector('span').textContent = val;
+          descriptionBox.style.display = 'block';
+          descriptionBox.innerHTML = stats[val] || '';
+          matches++;
+        }
+      });
+
+      revealedCount += matches;
+      updateHangman(revealedCount);
+
+      const allRevealed = [...letters].every(el => el.classList.contains('revealed'));
+      if (allRevealed) {
+        continueBtn.style.display = 'block';
+        input.style.display = 'none';
+      }
+    });
+
+    continueBtn.addEventListener('click', () => {
+      document.getElementById('rope').classList.add('cut');
+      setTimeout(() => {
+        document.body.innerHTML = `
+          <div style="text-align:center; font-family: 'Press Start 2P', monospace; padding-top: 5rem; font-size: 1rem; animation: dash 1.2s ease forwards;">
+            <div style="animation: fall 0.8s ease forwards;">🧍‍♂️</div>
+            <div style="margin-top:2rem;">You escaped!<br><br>🏃💨</div>
+          </div>
+        `;
+      }, 800);
+    });
+  </script>
+</body>
+</html>
