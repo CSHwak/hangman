@@ -2,28 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Hangman Hover Stats</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Margarine&display=swap" rel="stylesheet" />
   <style>
-    @keyframes fall {
-      0% { transform: translateY(0); opacity: 1; }
-      100% { transform: translateY(150px); opacity: 1; }
-    }
-    @keyframes dash {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
-    }
+    /* 배경 이미지 추가 */
     body {
-      font-family: 'Helvetica Neue', sans-serif;
       margin: 0;
-      background: #fefefe;
+      font-family: 'Helvetica Neue', sans-serif;
+      background-color: #gray;
       height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
+      /* 배경 이미지 */
+      background-image: url('seoul_pixel_art_tall_silhouette.png');
+      background-repeat: repeat-x;
+      background-position: bottom left;
+      background-size: auto 13vh; /* 높이를 200px로 맞춤, 너비는 비율 유지 */
+      background-color: #EAEAEA;
     }
+
+    /* 행맨 스타일 및 나머지 CSS는 기존과 동일 */
     .hangman {
       position: relative;
       width: 120px;
@@ -31,32 +32,43 @@
       margin-bottom: 2rem;
       margin-top: 4rem;
     }
-    .structure,
-    .part {
+    .structure, .part {
       position: absolute;
-      background-color: #000;
-      display: none;
+      background-color: #ccc;
+    }
+    .structure.dark {
+      background-color: #000 !important;
     }
     .base { bottom: 0; left: 0; width: 100%; height: 6px; }
     .post { top: 0; left: 20px; width: 6px; height: 200px; }
-    .beam { top: 0; left: 20px; width: 70px; height: 6px; }
+    .beam { top: 0; left: 20px; width: 80px; height: 6px; }
+    .diagonal {
+      width: 6px;
+      height: 90px;
+      background-color: #ccc;
+      transform: rotate(45deg);
+      top: -10px;
+      left: 50px;
+    }
     .rope { top: 6px; left: 88px; width: 2px; height: 20px; background-color: #a37a3d; transition: height 0.6s ease; }
     .rope.cut { height: 0 !important; }
+    .part { display: block; background-color: #000; }
     .head { top: 26px; left: 75px; width: 26px; height: 26px; border-radius: 50%; }
-    .body { top: 52px; left: 87px; width: 2px; height: 50px; }
-    .arm-left { top: 60px; left: 87px; width: 20px; height: 2px; transform: rotate(-45deg); transform-origin: left center; }
-    .arm-right { top: 60px; left: 68px; width: 20px; height: 2px; transform: rotate(45deg); transform-origin: right center; }
-    .leg-left { top: 95px; left: 87px; width: 20px; height: 2px; transform: rotate(45deg); transform-origin: top left; }
-    .leg-right { top: 95px; left: 68px; width: 20px; height: 2px; transform: rotate(-45deg); transform-origin: top right; }
+    .body { top: 52px; left: 87px; width: 2px; height: 42px; }
+    .arm-left { top: 55px; left: 87px; width: 20px; height: 2px; transform: rotate(30deg); transform-origin: left center; }
+    .arm-right { top: 55px; left: 68px; width: 20px; height: 2px; transform: rotate(-30deg); transform-origin: right center; }
+    .leg-left { top: 90px; left: 87px; width: 20px; height: 2px; transform: rotate(40deg); transform-origin: top left; }
+    .leg-right { top: 90px; left: 68px; width: 20px; height: 2px; transform: rotate(-40deg); transform-origin: top right; }
     .word {
       display: flex;
       gap: 1rem;
       justify-content: center;
       align-items: center;
-      margin-top: 10vh;
+      margin-top: 5vh;
     }
     .letter {
-      width: 50px; height: 60px;
+      width: 50px;
+      height: 60px;
       font-size: 3rem;
       font-family: 'Margarine', cursive;
       display: flex;
@@ -66,63 +78,136 @@
       position: relative;
       user-select: none;
     }
-    .letter span { color: transparent; }
-    .letter.hinted span { color: #ccc !important; }
-    .letter.revealed span { color: #000 !important; }
+    .letter span {
+      color: transparent;
+    }
+    .letter.hinted span {
+      color: #ccc !important;
+    }
+    .letter.revealed span {
+      color: #000 !important;
+    }
+    .letter.revealed.active span {
+      color: red !important;
+    }
     .letter.revealed:hover span {
-      color: red;
+      color: red !important;
       cursor: pointer;
     }
     #description {
       display: none;
       position: absolute;
-      top: 60%;
+      top: 50%;
       left: 50%;
       transform: translateX(-50%);
-      background: #f4f4f4;
+      background: #F6F6F6;
       border: 3px solid #000;
-      padding: 1rem;
-      width: 300px;
+      padding: 2rem;
+      width: 800px;
+      height: 200px;
       font-family: 'Press Start 2P', monospace;
-      font-size: 0.7rem;
+      font-size: 1rem;
       text-align: center;
-      box-shadow: 4px 4px 0 #000;
       line-height: 1.8;
       z-index: 10;
+      color: #000;
+      word-spacing: -3px;
+    }
+    .desc-buttons {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .desc-buttons a {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.6rem;
+      border: 2px solid #000;
+      background: #000;
+      padding: 0.3rem 0.5rem;
+      text-decoration: none;
+      color: #fff;
     }
     #keyInput {
-      position: fixed;
-      bottom: 3.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 1rem;
-      padding: 0.5rem;
-      font-family: 'Press Start 2P', monospace;
-      border: 2px solid #000;
-      width: 280px;
-      text-align: center;
-    }
-    #continueBtn {
-      display: none;
       position: fixed;
       bottom: 6.5rem;
       left: 50%;
       transform: translateX(-50%);
       font-family: 'Press Start 2P', monospace;
-      font-size: 0.7rem;
-      border: 2px solid #000;
+      font-size: 16px;
+      letter-spacing: 2px;
+      background-color: #ffffff;
+      color: #000000;
+      border: 3px solid #000000;
+      padding: 0.8rem;
+      width: 400px;
+      text-align: center;
+      outline: none;
+      user-select: text;
+
+    }
+    #keyInput::placeholder {
+      color: #ccc;
+    }
+    #keyInput:focus {
+      border-color: #000000;
+    }
+    #continueBtn {
+      display: none;
+ position: fixed;
+      bottom: 6.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 16px;
+      letter-spacing: 2px;
+      background-color: #000000;
+      color: #ffffff;
+      border: 3px solid #000000;
+      padding: 0.8rem;
+      width: 400px;
+      text-align: center;
+      outline: none;
+      user-select: text;
+    }
+    #feedback {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1rem;
       background: #fff;
-      cursor: pointer;
-      padding: 0.4rem 1rem;
-      z-index: 20;
+      border: 3px solid #000;
+      padding: 1rem 2rem;
+      opacity: 0;
+      z-index: 100;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      color: #111;
+    }
+    .instruction {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.8rem;
+      text-align: center;
+      margin-bottom: -0.5rem;
+    }
+    @keyframes fall {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(150px); opacity: 1; }
+    }
+    @keyframes dash {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
     }
   </style>
 </head>
 <body>
   <div class="hangman">
-    <div class="structure base" style="display: none;"></div>
+    <div class="structure base"></div>
     <div class="structure post"></div>
     <div class="structure beam"></div>
+    <div class="structure diagonal"></div>
     <div class="structure rope" id="rope"></div>
     <div class="part head"></div>
     <div class="part body"></div>
@@ -131,104 +216,221 @@
     <div class="part leg-left"></div>
     <div class="part leg-right"></div>
   </div>
-  <p style="font-family: 'Press Start 2P', monospace; font-size: 0.8rem; text-align: center; margin-bottom: -0.5rem;">Guess the country!</p>
+  <p id="instructionText" class="instruction">Guess the country</p>
   <div class="word" id="word"></div>
-  <input type="text" id="keyInput" maxlength="1" placeholder="Type S..." />
-  <button id="continueBtn">Cut the rope</button>
   <div id="description"></div>
-  <script>
-    const word = 'SOUTHKOREA';
-    const stats = {
-      'S': '<b><u>Suicide Rate</u></b><br>This country has the highest suicide rate in the OECD.',
-      'O': '<b><u>Overwork Hours</u></b><br>Overworking is endemic — people work ~1915 hours/year, among the highest in the OECD.',
-      'U': '<b><u>Unemployment</u></b><br>Youth unemployment is ~7.3% (KOSIS, 2023).',
-      'T': '<b><u>Test Pressure</u></b><br>Over 70% of students face academic stress (PISA).',
-      'H': '<b><u>Hardworking Culture</u></b><br>Long work hours are normalized.',
-      'K': '<b><u>Kids & Birthrate</u></b><br>Lowest birth rate globally: 0.8/woman.',
-      'R': '<b><u>Risk of Depression</u></b><br>Adolescent depression rates are high.',
-      'E': '<b><u>Elderly Poverty</u></b><br>~40% — the highest in the OECD.',
-      'A': '<b><u>Academic Pressure</u></b><br>Ranks among the highest globally (PISA).'
-    };
+  <input id="keyInput" type="text" maxlength="1" placeholder="Type S..." />
+  <div id="feedback"></div>
+  <button id="continueBtn">Cut the rope</button>
+<script>
+  const keyInput = document.getElementById("keyInput");
+  const description = document.getElementById("description");
+  const feedback = document.getElementById("feedback");
+  const continueBtn = document.getElementById("continueBtn");
+  const wordContainer = document.getElementById('word');
+  const instructionText = document.getElementById('instructionText');
+  const rope = document.getElementById('rope');
 
-    const bodyParts = ['base','post','beam','rope','head','body','arm-left','arm-right','leg-left','leg-right'];
-    const wordContainer = document.getElementById('word');
-    const descriptionBox = document.getElementById('description');
-    const input = document.getElementById('keyInput');
-    const continueBtn = document.getElementById('continueBtn');
+  const structureParts = ['beam', 'post', 'base', 'diagonal'];
+  let structureIndex = 0;
+  const word = "SOUTHKOREA";
+  const stats = {
+    'S': '<b><u style="color:red">Suicide Rate</u></b><br>' +
+    '<span style="color:red">This country has the highest Suicide Rate<br>among all OECD countries.</span><br>' +
+'About 28.3 suicides per 100,000 people (2024)<br>' +
+'OECD average: 11.3 / Czech Republic: ~11.7 (2023)<br>' +
+'<div class="desc-buttons">' +
+  '<a href="https://www.firstpost.com/world/south-korea-suicide-rate-oecd-nations13763488-13763488.html" target="_blank">view article</a>' +
+  '<a href="suicide_graph.html" target="_blank">Compare with Czech</a>' +
+'</div>',
+   'O': `<b><u style="color:red">Overworking culture</u></b><br>
+<b>1. Workers work over 50 hours a week:~19.7%</b><br>
+<b>Rank 5/40 / OECD average : 10% <br>
+<b>2. Hours worked per year 1,901 h/year <br> Rank 5/40 / OECD average: 1,751 h/y<br> 
+<div class="desc-buttons">
+  <a href="https://www.theguardian.com/global-development/2023/jun/18/death-from-overwork-young-koreans-rebel-against-culture-of-long-hours" target="_blank">view article</a>
+  <a href="overwork_graph.html" target="_blank">1. Compare with Czech</a>
+   <a href="https://www.oecd.org/en/data/indicators/hours-worked.html?oecdcontrol-324c268e53-var1=OECD%7CAUS%7CAUT%7CBEL%7CCAN%7CCHL%7CCOL%7CCRI%7CCZE%7CDNK%7CEST%7CFIN%7CFRA%7CDEU%7CGRC%7CHUN%7CISL%7CIRL%7CISR%7CITA%7CJPN%7CKOR%7CLVA%7CLTU%7CLUX%7CMEX%7CNLD%7CNZL%7CNOR%7CPOL%7CPRT%7CSVK%7CSVN%7CESP%7CSWE%7CCHE%7CTUR%7CGBR%7CUSA%7CEU27" target="_blank">2. Compare with Czech</a>
+</div>`,
 
+'U': `<b><u style="color:red">Unconnected social</u></b><br>
+<b>In a city full of people, but empty of support</b><br>
+<b>1. No social support:</b> 23% (1/48) OECD avg: 9% <br>
+<b>2. People who having friends/relatives to count on:</b><br>
+~80%(lowest)/OECD average:91% Czech: 96%<br>
+<div class="desc-buttons">
+  <a href="https://www.nature.com/articles/s41598-024-76555-y?ut">view ditail</a>
+  <a href="https://www.oecd.org/en/data/indicators/social-support.html">1. Compare with Czech</a>
+  <a href="https://ourworldindata.org/grapher/people-who-report-having-friends-or-relatives-they-can-count-on?country=AUS~COL~GRC~ISL~MEX~NOR~USA~PRT~FIN~DNK~BRA~TUR~KOR~CZE">2. Compare with Czech</a>
+</div>`,
+
+'T': `<b><u style="color:red">Trapped Youth</u></b><br>
+<b>A generation stuck between diplomas and dead ends</b><br>
+</b> 23% of youth are NEET. <br>
+<b>NEET: Young people not in education or employment<br>
+ 3rd in oecd (OECD avg: 13%)<br>
+<div class="desc-buttons">
+ <a href="https://english.hani.co.kr/arti/english_edition/e_business/703236.html" target="_blank">view article</a>
+  <a href="https://www.oecd.org/en/data/indicators/youth-not-in-employment-education-or-training-neet.html" target="_blank">view NEET data</a>
+</div>`
+,
+
+'H': `<b><u style="color:red">Housing Precarity</u></b><br>
+<b>Only 16% of youth (under 35) own a home (2022)</b><br>OECD average: ~34%</b><br>
+<b>this country overall homeownership: 57.3% (2021)</b> Czech Republic : 72%<br>
+<div class="desc-buttons">
+  <a href="https://www.chosun.com/english/national-en/2024/01/26/NTU2GPPY45CPPDF2X2SLKPI254/" target="_blank">view article</a>
+  <a href="https://www.oecd.org/en/data/datasets/oecd-affordable-housing-database.html" target="_blank">view ditail</a>
+  <a href="https://en.wikipedia.org/wiki/List_of_countries_by_home_ownership_rate" target="_blank">view ditail</a>
+</div>
+`,
+
+'K': '<b><u style="color:red">Kids & Birthrate</u></b><br>This country has the lowest birth rate in the world<br><span style="color:red">People die. No one replaces them</span><br><b>: 0.72 children per woman</b><br><b>OECD average: 1.43 (2023)</b>' +
+'<div class="desc-buttons"><a href="https://www.bbc.com/news/world-asia-68402139" target="_blank">view article</a><a href="https://ourworldindata.org/grapher/children-per-woman-un?tab=slope&country=CZE~KOR&mapSelect=~CZE" target="_blank">compare with Czech</a></div>',
+
+
+    'R': `<b><u style="color:red">Reduced rest</u></b><br>
+<b>1.Average sleep time:</b> 6h 3m/day-3rd lowest in OECD/<br>
+OECD average: 7h 22m / Czech Republic: ~7h 30m<br>
+<b>2.People who think leisure is very important:</b> 22%<br> lowest / World average: 40%<br>
+<div class="desc-buttons">
+  <a href="#" target="_blank">view article</a>
+      <a href="https://worldpopulationreview.com/country-rankings/average-sleep-time-by-country">Compare with Czech 1</a>
+  <a href="https://ourworldindata.org/grapher/how-important-leisure-is-to-people-in-life?country=KOR~CZE" target="_blank">compare with Czech 2</a>
+</div>`,
+
+'E': `<b><u style="color:red">Elderly Poverty</u></b><br>
+<b>Around 40% of the elderly live in poverty </b><br>
+This is the <b>highest rate among OECD countries</b>.<br>
+<b>OECD average:</b> ~13% / <b>Czech Republic:</b> ~7%<br>
+<b>Source:</b> OECD Pensions at a Glance <br>
+<div class="desc-buttons">
+  <a href="https://english.hani.co.kr/arti/english_edition/e_national/1121203.html" target="_blank">view article</a>
+  <a href="https://www.oecd.org/en/data/indicators/poverty-rate.html?oecdcontrol-0ad85c6bab-var1=CZE%7CKOR&oecdcontrol-9f300511bc-var6=Y_GT65" target="_blank">compare with Czech</a>
+</div>`,
+
+ 'A': `<b><u style="color:red">Academic Pressure</u></b><br>
+<b>This country reports some of the highest academic stress:</b> over 55% of students feel anxiety about tests even when well prepared<br>
+<b>OECD average:</b> ~36% / <b>Czech Republic:</b> ~26%<br>
+<div class="desc-buttons">
+  <a href="https://thediplomat.com/2025/06/south-koreas-education-obsession-is-a-national-emergency/" target="_blank">view article</a>
+  <a href="https://gpseducation.oecd.org/" target="_blank">compare with Czech (OECD Data Explorer)</a>
+</div>`
+
+  };
+
+  let currentHighlight = null;
+
+  function updateLetterColors() {
+    document.querySelectorAll('.letter').forEach(el => {
+      const span = el.querySelector('span');
+      if(el.classList.contains('revealed')) {
+        if(el.dataset.letter === currentHighlight) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      } else {
+        el.classList.remove('active');
+        span.style.color = 'transparent';
+      }
+    });
+  }
+
+  // generate word boxes
+  word.split('').forEach((char, i) => {
+    const el = document.createElement('div');
+    el.classList.add('letter');
+    if(i === 0) el.classList.add('hinted');
+    el.dataset.letter = char;
+    el.innerHTML = (i === 0 ? `<span>${char}</span>` : '<span></span>');
+    el.addEventListener('click', () => {
+      if(el.classList.contains('revealed')) {
+        currentHighlight = el.dataset.letter;
+        description.style.display = 'block';
+        description.innerHTML = stats[currentHighlight] || `<b><u style="color:red">${currentHighlight}</u></b> related stat will go here.`;
+        updateLetterColors();
+      }
+    });
+    wordContainer.appendChild(el);
+  });
+
+  keyInput.addEventListener('input', () => {
+    const currentValue = keyInput.value.trim().toUpperCase();
+    if(instructionText.textContent === 'Guess the country' && currentValue === 'S') {
+      keyInput.placeholder = 'Guess the letter!';
+    }
+  });
+
+  keyInput.addEventListener('keydown', e => {
+    if(e.key !== 'Enter') return;
+    const val = keyInput.value.trim().toUpperCase();
+    if(!/^[a-zA-Z]$/.test(val)) return;
+
+    keyInput.value = '';
+    let match = false;
     let revealedCount = 0;
 
-    word.split('').forEach((char, i) => {
-      const el = document.createElement('div');
-      el.classList.add('letter');
-      if (i === 0) el.classList.add('hinted');
-      el.dataset.letter = char;
-      el.innerHTML = (i === 0 ? '<span>S</span>' : '<span></span>');
-      wordContainer.appendChild(el);
+    document.querySelectorAll('.letter').forEach(el => {
+      if(!el.classList.contains('revealed') && el.dataset.letter === val.toUpperCase()) {
+        el.classList.add('revealed');
+        el.querySelector('span').textContent = val.toUpperCase();
+        match = true;
+      }
+      if(el.classList.contains('revealed')) revealedCount++;
     });
 
-    function updateHangman(count) {
-      document.querySelectorAll('.structure, .part').forEach(p => p.style.display = 'none');
-      for (let i = 0; i < count && i < bodyParts.length; i++) {
-        document.querySelector('.' + bodyParts[i]).style.display = 'block';
-      }
+    if(match) {
+      currentHighlight = val.toUpperCase();
+      description.style.display = 'block';
+      description.innerHTML = stats[currentHighlight] || `<b><u style="color:red">${currentHighlight}</u></b> related stat will go here.`;
+      updateLetterColors();
     }
 
-    input.addEventListener('keydown', e => {
-      if (e.key !== 'Enter') return;
-      const val = input.value.trim().toUpperCase();
-      input.value = '';
-      if (input.placeholder === 'Type S...') input.placeholder = 'Guess the letter...';
+    feedback.textContent = match ? 'Right!' : 'Wrong!';
+    feedback.style.opacity = 1;
+    setTimeout(() => feedback.style.opacity = 0, 300);
 
-      if (val === word) {
-        document.querySelectorAll('.letter').forEach(l => {
-          if (!l.classList.contains('revealed')) {
-            l.classList.add('revealed');
-            l.querySelector('span').textContent = l.dataset.letter;
-          }
-        });
-        revealedCount = word.length;
-        updateHangman(revealedCount);
-        continueBtn.style.display = 'block';
-        input.style.display = 'none';
-        return;
-      }
+    if(!match && structureIndex < structureParts.length) {
+      document.querySelector(`.${structureParts[structureIndex]}`)?.classList.add('dark');
+      structureIndex++;
+    }
 
-      const letters = document.querySelectorAll('.letter');
-      let matches = 0;
+   if (structureIndex === structureParts.length) {
+  setTimeout(() => {
+    document.body.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: 'Press Start 2P', monospace; font-size: 1rem; text-align: center;">
+        <div style="color:red; margin-bottom:2rem;">GAME OVER</div>
+        <button onclick="location.reload()" style="font-family: 'Press Start 2P'; font-size: 0.7rem; border: 2px solid #000; padding: 0.4rem 1rem;">Restart</button>
+      </div>
+    `;
+  }, 500);
+}
 
-      letters.forEach(el => {
-        if (!el.classList.contains('revealed') && el.dataset.letter === val) {
-          el.classList.remove('hinted');
-          el.classList.add('revealed');
-          el.querySelector('span').textContent = val;
-          descriptionBox.style.display = 'block';
-          descriptionBox.innerHTML = stats[val] || '';
-          matches++;
-        }
-      });
+    if(revealedCount === word.length) {
+      continueBtn.style.display = 'block';
+      keyInput.style.display = 'none';
+      description.style.display = 'block';
+    }
+  });
 
-      revealedCount += matches;
-      updateHangman(revealedCount);
-
-      const allRevealed = [...letters].every(el => el.classList.contains('revealed'));
-      if (allRevealed) {
-        continueBtn.style.display = 'block';
-        input.style.display = 'none';
-      }
-    });
-
-    continueBtn.addEventListener('click', () => {
-      document.getElementById('rope').classList.add('cut');
-      setTimeout(() => {
-        document.body.innerHTML = `
-          <div style="text-align:center; font-family: 'Press Start 2P', monospace; padding-top: 5rem; font-size: 1rem; animation: dash 1.2s ease forwards;">
-            <div style="animation: fall 0.8s ease forwards;">🧍‍♂️</div>
-            <div style="margin-top:2rem;">You escaped!<br><br>🏃💨</div>
-          </div>
-        `;
-      }, 800);
-    });
-  </script>
+continueBtn.addEventListener('click', () => {
+  rope.classList.add('cut');
+  const parts = document.querySelectorAll('.part');
+  parts.forEach(part => {
+    part.style.animation = 'fall 0.8s ease forwards';
+  });
+  setTimeout(() => {
+    document.body.innerHTML = `
+         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: 'Press Start 2P', monospace; font-size: 1rem; text-align: center; animation: dash 1.2s ease forwards; line-height: 1.8;">
+      <div style="margin-bottom:2rem;">
+      <span style="color:red">You escaped!</span><br>You cut the rope<br>not just to escape<br>but to see what's holding us back.</div>
+        <button onclick="location.reload()" style="font-family: 'Press Start 2P'; font-size: 0.7rem; border: 2px solid #000; padding: 0.4rem 1rem;">Restart</button>
+      </div>`;
+  }, 800);
+});
+</script>
 </body>
 </html>
+
+
