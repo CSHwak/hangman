@@ -20,7 +20,7 @@
       background-image: url('seoul_pixel_art_tall_silhouette.png');
       background-repeat: repeat-x;
       background-position: bottom left;
-      background-size: auto 13vh; /* 높이를 200px로 맞춤, 너비는 비율 유지 */
+      background-size: auto 20vh; /* 높이를 200px로 맞춤, 너비는 비율 유지 */
       background-color: orange;
     }
 
@@ -35,6 +35,7 @@
     .structure, .part {
       position: absolute;
       background-color: #8c8c8c;
+       opacity: 0.5;
     }
     .structure.dark {
       background-color: #000 !important;
@@ -49,6 +50,7 @@
       transform: rotate(45deg);
       top: -10px;
       left: 50px;
+          opacity: 0.5;
     }
     .rope { top: 6px; left: 88px; width: 2px; height: 20px; background-color: #a37a3d; transition: height 0.6s ease; }
     .rope.cut { height: 0 !important; }
@@ -83,6 +85,7 @@
     }
     .letter.hinted span {
       color: #8c8c8c !important;
+          opacity: 0.5;
     }
     .letter.revealed span {
       color: #000 !important;
@@ -148,6 +151,7 @@
     }
     #keyInput::placeholder {
       color: #8c8c8c;
+          opacity: 0.5;
     }
     #keyInput:focus {
       border-color: #000000;
